@@ -3,6 +3,6 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "build": "node --check public/app.js"
+    "build": "node --check public/flow.js && node --check public/app.js"
   }
 }

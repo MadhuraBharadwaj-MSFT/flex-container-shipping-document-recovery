@@ -1,4 +1,5 @@
 const el = id => document.getElementById(id);
+const messageFlow = createShipmentFlow();
 
 const valid = {
   shipment_id: "assigned-on-send",
@@ -77,6 +78,7 @@ function selectTab(name) {
 }
 
 function render(run) {
+  messageFlow.update(run);
   el("results").hidden = false;
   el("original").textContent = JSON.stringify(run.input, null, 2);
   el("canonical").textContent = run.canonical
@@ -131,7 +133,9 @@ async function submit() {
     return;
   }
 
+  const repairable = "shipmentId" in shipment || "partnerName" in shipment || "shipTo" in shipment;
   setBusy(true);
+  messageFlow.start(repairable);
   currentId = crypto.randomUUID().replaceAll("-", "");
   el("results").hidden = false;
   el("original").textContent = JSON.stringify(shipment, null, 2);
@@ -159,12 +163,21 @@ async function submit() {
 }
 
 async function initialize() {
-  el("valid").onclick = () => { el("message").value = JSON.stringify(valid, null, 2); };
-  el("malformed").onclick = () => { el("message").value = JSON.stringify(malformed, null, 2); };
+  el("valid").onclick = () => {
+    el("message").value = JSON.stringify(valid, null, 2);
+    messageFlow.reset(false);
+    el("flow-detail").textContent = "The valid record uses only the primary queue.";
+  };
+  el("malformed").onclick = () => {
+    el("message").value = JSON.stringify(malformed, null, 2);
+    messageFlow.reset(true);
+    el("flow-detail").textContent = "The repairable record reveals the DLQ inside Azure Service Bus.";
+  };
   el("send").onclick = submit;
   el("try-tab").onclick = () => selectTab("try");
   el("architecture-tab").onclick = () => selectTab("architecture");
   el("message").value = JSON.stringify(valid, null, 2);
+  messageFlow.reset(false);
 
   try {
     const authResponse = await fetch("/.auth/me", { cache: "no-store" });

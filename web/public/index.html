@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Shipping document recovery</title>
   <link rel="stylesheet" href="/style.css">
-  <script src="/app.js?v=1" defer></script>
+  <script src="/flow.js?v=1" defer></script>
+  <script src="/app.js?v=2" defer></script>
 </head>
 <body>
   <header>
@@ -55,15 +56,71 @@
               <div><p class="step">Step 2</p><h2>Follow the event-driven flow</h2></div>
               <span id="flow-status" class="status ready">Ready</span>
             </div>
-            <div class="flow">
-              <div class="node"><strong>Service Bus</strong><span>shipment-submissions</span></div>
-              <span class="arrow">→</span>
-              <div class="node"><strong>.NET worker</strong><span>Validate, build HTML, run Chromium</span></div>
-              <span class="arrow">→</span>
-              <div class="node success"><strong>Blob Storage</strong><span>JSON + HTML + PDF</span></div>
-            </div>
-            <div class="recovery-flow">
-              <span>Invalid format</span><strong>↓ DLQ → Hosted Skill → requeue ↑</strong>
+            <div id="flow-stage" class="shipment-flow">
+              <svg id="flow-svg" class="shipment-flow-svg" viewBox="0 0 1160 240" role="img" aria-labelledby="flow-title flow-description">
+                <title id="flow-title">Shipment message flow</title>
+                <desc id="flow-description">A shipment moves from the demo UI into the primary Service Bus queue, then to the .NET document worker and Blob Storage. For repairable input only, the diagram expands to show the dead-letter queue inside Service Bus and the Hosted Skill recovery loop.</desc>
+                <defs>
+                  <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M1 1l6 3-6 3" fill="none" stroke="#6f8fc9" stroke-width="1.7"/></marker>
+                  <marker id="arrow-amber" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M1 1l6 3-6 3" fill="none" stroke="#bd7a22" stroke-width="1.7"/></marker>
+                  <marker id="arrow-purple" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M1 1l6 3-6 3" fill="none" stroke="#8055b8" stroke-width="1.7"/></marker>
+                  <filter id="token-shadow" x="-60%" y="-60%" width="220%" height="220%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#273b63" flood-opacity=".28"/></filter>
+                </defs>
+
+                <rect class="bus-shell bus-shell-valid" x="240" y="35" width="250" height="180" rx="18"/>
+                <rect class="bus-shell bus-shell-recovery recovery-only" x="240" y="35" width="250" height="360" rx="18"/>
+                <text class="bus-title" x="265" y="70">Azure Service Bus</text>
+
+                <g id="flow-node-ui" class="flow-node" transform="translate(20 90)">
+                  <rect class="node-box" width="180" height="90" rx="13"/>
+                  <text class="node-title" x="20" y="34">Demo UI</text>
+                  <text class="node-detail" x="20" y="60">Submit shipment JSON</text>
+                </g>
+                <g id="flow-node-queue" class="flow-node queue-node" transform="translate(270 90)">
+                  <rect class="node-box" width="190" height="90" rx="13"/>
+                  <text class="node-title" x="20" y="34">Primary queue</text>
+                  <text class="node-detail" x="20" y="59">shipment-submissions</text>
+                </g>
+                <g id="flow-node-worker" class="flow-node" transform="translate(600 90)">
+                  <rect class="node-box" width="220" height="90" rx="13"/>
+                  <text class="node-title" x="20" y="34">.NET document worker</text>
+                  <text class="node-detail" x="20" y="59">Validate + Chromium PDF</text>
+                </g>
+                <g id="flow-node-blob" class="flow-node output-node" transform="translate(930 90)">
+                  <rect class="node-box" width="200" height="90" rx="13"/>
+                  <text class="node-title" x="20" y="34">Blob Storage</text>
+                  <text class="node-detail" x="20" y="59">JSON + HTML + PDF</text>
+                </g>
+
+                <g id="flow-node-dlq" class="flow-node dlq-node recovery-only" transform="translate(270 270)">
+                  <rect class="node-box" width="190" height="90" rx="13"/>
+                  <text class="node-title" x="20" y="34">Dead-letter queue</text>
+                  <text class="node-detail" x="20" y="59">Inside Service Bus</text>
+                </g>
+                <g id="flow-node-skill" class="flow-node skill-node recovery-only" transform="translate(600 270)">
+                  <rect class="node-box" width="220" height="90" rx="13"/>
+                  <text class="node-title" x="20" y="34">Hosted Skill</text>
+                  <text class="node-detail" x="20" y="59">Normalize + requeue once</text>
+                </g>
+                <text class="recovery-label recovery-only" x="518" y="238">Validation failure moves the message into the Service Bus DLQ</text>
+
+                <path id="flow-submit" class="flow-route route-main" d="M200 135H270" marker-end="url(#arrow-blue)"/>
+                <path id="flow-queue-worker" class="flow-route route-main" d="M460 135H600" marker-end="url(#arrow-blue)"/>
+                <path id="flow-worker-blob" class="flow-route route-main" d="M820 135H930" marker-end="url(#arrow-blue)"/>
+                <path id="flow-worker-dlq" class="flow-route route-rejected recovery-only" d="M710 180V225H460V315" marker-end="url(#arrow-amber)"/>
+                <path id="flow-dlq-skill" class="flow-route route-recovered recovery-only" d="M460 315H600" marker-end="url(#arrow-purple)"/>
+                <path id="flow-skill-queue" class="flow-route route-recovered recovery-only" d="M710 270V225H365V180" marker-end="url(#arrow-purple)"/>
+
+                <g id="message-token" class="message-token" hidden aria-hidden="true">
+                  <circle r="13"/>
+                  <text x="0" y="4" text-anchor="middle">M</text>
+                </g>
+              </svg>
+              <div class="flow-legend">
+                <span><i class="legend-dot main"></i>Normal delivery</span>
+                <span class="recovery-only"><i class="legend-dot rejected"></i>Rejected to DLQ</span>
+                <span class="recovery-only"><i class="legend-dot recovered"></i>Repaired and requeued</span>
+              </div>
             </div>
             <p id="flow-detail" class="detail">Load an example to begin.</p>
             <ol id="events" class="events"></ol>
