@@ -5,22 +5,23 @@ function createShipmentFlow() {
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const nodeIds = ["ui", "queue", "worker", "blob", "dlq", "skill"];
   const animations = [];
+  const playedStages = new Set();
   let playing = false;
-  let currentStage = -1;
   let runId = null;
   let repairable = false;
 
-  const stagePaths = [
-    [{ path: "flow-submit", tone: "main", duration: 650 }],
-    [{ path: "flow-queue-worker", tone: "main", duration: 850 }],
-    [{ path: "flow-worker-dlq", tone: "rejected", duration: 1150 }],
-    [
+  const stagePaths = {
+    submitted: [{ path: "flow-submit", tone: "main", duration: 650 }],
+    received: [{ path: "flow-queue-worker", tone: "main", duration: 850 }],
+    rejected: [{ path: "flow-worker-dlq", tone: "rejected", duration: 1150 }],
+    requeue_rejected: [{ path: "flow-worker-dlq", tone: "rejected", duration: 1150 }],
+    requeued: [
       { path: "flow-dlq-skill", tone: "recovered", duration: 800 },
       { path: "flow-skill-queue", tone: "recovered", duration: 1300 },
       { path: "flow-queue-worker", tone: "recovered", duration: 850 },
     ],
-    [{ path: "flow-worker-blob", tone: "main", duration: 850 }],
-  ];
+    output_saved: [{ path: "flow-worker-blob", tone: "main", duration: 850 }],
+  };
 
   function setMode(showRecovery) {
     repairable = showRecovery;
@@ -50,22 +51,28 @@ function createShipmentFlow() {
     node.classList.add(stateName);
   }
 
-  function stageState(index) {
+  function stageState(stageName) {
     clearNodeStates();
-    if (index >= 0) markNode("ui", "complete");
-    if (index === 0) markNode("queue", "active");
-    if (index >= 1) markNode("queue", "complete");
-    if (index === 1) markNode("worker", "active");
-    if (index === 2) {
+    markNode("ui", "complete");
+    if (stageName === "submitted") {
+      markNode("queue", "active");
+    }
+    if (stageName !== "submitted") {
+      markNode("queue", "complete");
+    }
+    if (stageName === "received") {
+      markNode("worker", "active");
+    }
+    if (stageName === "rejected" || stageName === "requeue_rejected") {
       markNode("worker", "complete");
       markNode("dlq", "active");
     }
-    if (index === 3) {
+    if (stageName === "requeued") {
       markNode("dlq", "complete");
       markNode("skill", "complete");
       markNode("worker", "active");
     }
-    if (index >= 4) {
+    if (stageName === "output_saved") {
       markNode("worker", "complete");
       markNode("blob", "complete");
       if (repairable) {
@@ -85,12 +92,13 @@ function createShipmentFlow() {
 
   function reset(showRecovery = false) {
     animations.length = 0;
+    playedStages.clear();
     playing = false;
-    currentStage = -1;
     runId = null;
     hideToken();
     token.className.baseVal = "message-token";
     token.removeAttribute("transform");
+    delete token.dataset.path;
     clearNodeStates();
     setMode(showRecovery);
   }
@@ -110,6 +118,7 @@ function createShipmentFlow() {
     const animation = animations.shift();
     const path = document.getElementById(animation.path);
     showToken();
+    token.dataset.path = animation.path;
     token.className.baseVal = `message-token ${animation.tone}`;
     if (reducedMotion.matches) {
       positionToken(path, 1);
@@ -131,38 +140,29 @@ function createShipmentFlow() {
     requestAnimationFrame(frame);
   }
 
-  function queueStage(index) {
-    for (const animation of stagePaths[index] || []) animations.push(animation);
-    stageState(index);
+  function queueStage(stageName) {
+    if (playedStages.has(stageName)) return;
+    playedStages.add(stageName);
+    for (const animation of stagePaths[stageName] || []) animations.push(animation);
+    stageState(stageName);
     playNext();
-  }
-
-  function targetStage(run) {
-    const observed = new Set(run.flow.events.map(event => event.stage));
-    if (observed.has("output_saved")) return 4;
-    if (observed.has("requeued")) return 3;
-    if (observed.has("rejected") || observed.has("requeue_rejected")) return 2;
-    if (observed.has("received")) return 1;
-    return 0;
   }
 
   function start(showRecovery) {
     reset(showRecovery);
-    queueStage(0);
+    queueStage("submitted");
   }
 
   function update(run) {
     if (runId !== run.id) {
       reset(run.repair_expected);
       runId = run.id;
-      queueStage(0);
+      queueStage("submitted");
     } else {
       setMode(run.repair_expected);
     }
-    const target = targetStage(run);
-    while (currentStage < target) {
-      currentStage++;
-      if (currentStage > 0) queueStage(currentStage);
+    for (const event of run.flow.events) {
+      queueStage(event.stage);
     }
   }
 
