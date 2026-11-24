@@ -6,10 +6,12 @@ param environmentName string
 param location string = 'eastus2'
 param functionLocation string = 'eastus2euap'
 param connectorLocation string = 'westcentralus'
-param foundryModel string = 'gpt-5.4'
-param foundryModelVersion string = '2026-03-05'
+param experienceLocation string = 'eastus2'
+param foundryModel string = 'gpt-oss-120b'
+param foundryModelVersion string = '1'
+param foundryModelFormat string = 'OpenAI-OSS'
 @minValue(1)
-param foundryModelCapacity int = 100
+param foundryModelCapacity int = 500
 param developerPrincipalId string = ''
 @description('Owner userId from this Static Web App /.auth/me. Empty denies all demo API access.')
 param demoOwnerId string = ''
@@ -29,8 +31,10 @@ module resources './resources.bicep' = {
     location: location
     functionLocation: functionLocation
     connectorLocation: connectorLocation
+    experienceLocation: experienceLocation
     foundryModel: foundryModel
     foundryModelVersion: foundryModelVersion
+    foundryModelFormat: foundryModelFormat
     foundryModelCapacity: foundryModelCapacity
     developerPrincipalId: empty(developerPrincipalId)
       ? deployer().objectId
@@ -42,6 +46,7 @@ module resources './resources.bicep' = {
 output AZURE_RESOURCE_GROUP string = group.name
 output AZURE_LOCATION string = location
 output AZURE_FUNCTION_LOCATION string = functionLocation
+output AZURE_EXPERIENCE_LOCATION string = experienceLocation
 output SERVICE_RECOVERY_NAME string = resources.outputs.recoveryFunctionAppName
 output SERVICE_WEB_NAME string = resources.outputs.staticWebAppName
 output DEMO_URL string = resources.outputs.demoUrl

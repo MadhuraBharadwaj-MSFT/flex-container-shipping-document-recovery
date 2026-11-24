@@ -51,6 +51,12 @@ resource functionApp 'Microsoft.Web/sites@2026-08-01' = {
       scaleAndConcurrency: {
         instanceMemoryMB: 2048
         maximumInstanceCount: 20
+        alwaysReady: [
+          {
+            name: 'function:ProcessShipment'
+            instanceCount: 1
+          }
+        ]
       }
       siteUpdateStrategy: {
         type: 'Recreate'

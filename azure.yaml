@@ -26,20 +26,23 @@ hooks:
       interactive: false
       continueOnError: false
       run: |
-        $location = if ($env:AZURE_LOCATION) { $env:AZURE_LOCATION } else { "eastus2" }
-        $functionLocation = if ($env:AZURE_FUNCTION_LOCATION) { $env:AZURE_FUNCTION_LOCATION } else { "eastus2euap" }
+        $location = if ($env:AZURE_LOCATION) { $env:AZURE_LOCATION } else { "westcentralus" }
+        $functionLocation = if ($env:AZURE_FUNCTION_LOCATION) { $env:AZURE_FUNCTION_LOCATION } else { "westcentralus" }
         $connectorLocation = if ($env:CONNECTOR_LOCATION) { $env:CONNECTOR_LOCATION } else { "westcentralus" }
+        $experienceLocation = if ($env:AZURE_EXPERIENCE_LOCATION) { $env:AZURE_EXPERIENCE_LOCATION } else { "eastus2" }
         azd env set AZURE_LOCATION $location
         azd env set AZURE_FUNCTION_LOCATION $functionLocation
         azd env set CONNECTOR_LOCATION $connectorLocation
+        azd env set AZURE_EXPERIENCE_LOCATION $experienceLocation
     posix:
       shell: sh
       interactive: false
       continueOnError: false
       run: |
-        azd env set AZURE_LOCATION "${AZURE_LOCATION:-eastus2}"
-        azd env set AZURE_FUNCTION_LOCATION "${AZURE_FUNCTION_LOCATION:-eastus2euap}"
+        azd env set AZURE_LOCATION "${AZURE_LOCATION:-westcentralus}"
+        azd env set AZURE_FUNCTION_LOCATION "${AZURE_FUNCTION_LOCATION:-westcentralus}"
         azd env set CONNECTOR_LOCATION "${CONNECTOR_LOCATION:-westcentralus}"
+        azd env set AZURE_EXPERIENCE_LOCATION "${AZURE_EXPERIENCE_LOCATION:-eastus2}"
   predeploy:
     windows:
       shell: pwsh

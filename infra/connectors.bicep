@@ -82,7 +82,7 @@ resource schemaServer 'Microsoft.Web/connectorGateways/mcpServerConfigs@2026-05-
   parent: connectorNamespace
   name: 'shipment-schema'
   properties: {
-    description: 'Read the canonical shipping schema from Blob Storage.'
+    description: 'Read the compact shipping repair contract from Blob Storage.'
     state: 'Enabled'
     disableApiKeyAuth: true
     settings: { textOnlyContent: true }
@@ -91,16 +91,16 @@ resource schemaServer 'Microsoft.Web/connectorGateways/mcpServerConfigs@2026-05-
       {
         connectionName: blobConnection.name
         name: 'azureblob'
-        displayName: 'Shipping schema'
-        description: 'Read the expected shipment schema.'
+        displayName: 'Shipping repair contract'
+        description: 'Read the allowlisted shipping-record repair contract.'
         operations: [
           {
             name: 'GetFileContentByPath_V2'
-            displayName: 'Read shipping schema'
-            description: 'Read the canonical JSON schema for shipping records.'
+            displayName: 'Read repair contract'
+            description: 'Read the compact JSON repair contract.'
             userParameters: [
               { name: 'dataset', value: storageAccountName }
-              { name: 'path', value: '/schemas/shipment-schema.json' }
+              { name: 'path', value: '/schemas/repair-contract.json' }
             ]
             agentParameters: []
           }

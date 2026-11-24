@@ -9,7 +9,7 @@ Functions Hosted Skill for repairable formatting differences.
   PuppeteerSharp and OS-installed Chromium, and stores the canonical JSON,
   HTML, and PDF in Blob Storage.
 - An invalid record reaches the Service Bus dead-letter queue (DLQ).
-- A Markdown-defined Hosted Skill reads the canonical schema through a
+- A Markdown-defined Hosted Skill reads a compact repair contract through a
   Connector Namespace, normalizes only allowlisted formatting differences,
   and requeues the record once.
 - The repaired record must pass the same deterministic .NET validation before
@@ -50,7 +50,7 @@ The UI shows:
 | Python Function App | Submission/status API and `shipment_repair.agent.md` |
 | Service Bus | Primary queue, DLQ, duplicate detection, and event-driven delivery |
 | .NET 10 Registry Function App | Strict validation, safe HTML generation, Chromium rendering, and Blob output |
-| Connector Namespace | Schema-read and repaired-message-send MCP tools |
+| Connector Namespace | Repair-contract-read and repaired-message-send MCP tools |
 | Microsoft Foundry | Model used by the Hosted Skill |
 | Blob Storage | Deployment artifacts, schema, run state, canonical JSON, HTML, and PDF |
 | Application Insights | Function, model, and tool telemetry |
@@ -87,8 +87,10 @@ the .NET worker.
   and Microsoft Foundry resources
 
 Before provisioning, verify that the selected Foundry model and capacity are
-available in `AZURE_LOCATION`. The Bicep defaults to `gpt-5.4` only as a
-starting configuration.
+available in `AZURE_LOCATION`. The Bicep defaults to `gpt-oss-120b` version `1`
+with the `OpenAI-OSS` format and capacity `500`, which supports Foundry
+`agentsV2`, chat completion, and tool use without requiring Azure OpenAI model
+entitlement.
 
 ## Deploy
 
@@ -97,11 +99,21 @@ az login
 azd auth login
 azd env new shipping-doc-demo
 azd env set AZURE_SUBSCRIPTION_ID <subscription-id>
-azd env set AZURE_LOCATION eastus2
-azd env set AZURE_FUNCTION_LOCATION eastus2euap
+azd env set AZURE_LOCATION westcentralus
+azd env set AZURE_FUNCTION_LOCATION westcentralus
 azd env set CONNECTOR_LOCATION westcentralus
+azd env set AZURE_EXPERIENCE_LOCATION eastus2
+azd env set FOUNDRY_MODEL gpt-oss-120b
+azd env set FOUNDRY_MODEL_VERSION 1
+azd env set FOUNDRY_MODEL_FORMAT OpenAI-OSS
+azd env set FOUNDRY_MODEL_CAPACITY 500
 azd up
 ```
+
+The Function Apps, Service Bus, storage, ACR, Foundry, managed identity, and
+Connector Namespace use West Central US. Static Web Apps and the monitoring
+stack use East US 2 because those resource types are unavailable in West
+Central US.
 
 The first deployment intentionally leaves the demo API locked. Open
 `<DEMO_URL>/.auth/me`, sign in, and copy its `userId`. Then configure that

@@ -6,9 +6,11 @@
     "location": {"value": "${AZURE_LOCATION=eastus2}"},
     "functionLocation": {"value": "${AZURE_FUNCTION_LOCATION=eastus2euap}"},
     "connectorLocation": {"value": "${CONNECTOR_LOCATION=westcentralus}"},
-    "foundryModel": {"value": "${FOUNDRY_MODEL=gpt-5.4}"},
-    "foundryModelVersion": {"value": "${FOUNDRY_MODEL_VERSION=2026-03-05}"},
-    "foundryModelCapacity": {"value": "${FOUNDRY_MODEL_CAPACITY=100}"},
+    "experienceLocation": {"value": "${AZURE_EXPERIENCE_LOCATION=eastus2}"},
+    "foundryModel": {"value": "${FOUNDRY_MODEL=gpt-oss-120b}"},
+    "foundryModelVersion": {"value": "${FOUNDRY_MODEL_VERSION=1}"},
+    "foundryModelFormat": {"value": "${FOUNDRY_MODEL_FORMAT=OpenAI-OSS}"},
+    "foundryModelCapacity": {"value": "${FOUNDRY_MODEL_CAPACITY=500}"},
     "developerPrincipalId": {"value": "${DEVELOPER_PRINCIPAL_ID=}"},
     "demoOwnerId": {"value": "${DEMO_OWNER_ID=}"}
   }

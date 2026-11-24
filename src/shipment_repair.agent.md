@@ -17,11 +17,13 @@ two tools listed below.
 1. **Prevent repair loops.** If the message ID starts with `repair-`, or either
    property map contains a `repaired` key, return
    `REPAIR_FAILED already repaired`. Call no tools.
-2. **Read the canonical schema.** Call
+2. **Confirm the external repair contract.** Call
    `azureblob_GetFileContentByPath_V2`, already scoped to
-   `/schemas/shipment-schema.json`. If the result has `$content`, pass its exact
-   base64 value to `decode_schema_content`. Otherwise use the returned JSON
-   object. Do not fetch any other path or URL.
+   `/schemas/repair-contract.json`. A successful connector response confirms
+   the managed-identity path. Do not copy, decode, transform, or fetch the
+   `$content` value. Then call `load_repair_contract` with no arguments to read
+   the identical validated contract packaged with this app. Do not call
+   `web_request` or any other tool.
 3. **Fix formatting only.** Apply only these transformations:
    - rename `shipmentId` to `shipment_id`;
    - rename `partnerName` to `partner`;
@@ -39,7 +41,7 @@ two tools listed below.
 4. Preserve every business value. Never invent missing fields, addresses,
    items, dates, quantities, weights, identifiers, or service levels. Never
    remove an unknown field to force validation. If the record still does not
-   match the schema exactly, return `REPAIR_FAILED requires business input`.
+   match the full rules below, return `REPAIR_FAILED requires business input`.
 5. **Requeue once.** Call `servicebus_SendMessage`, already scoped to
    `shipment-submissions`, with:
    - `ContentData`: compact canonical JSON text, not base64;

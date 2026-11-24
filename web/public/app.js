@@ -138,6 +138,7 @@ async function submit() {
   el("canonical").textContent = "Waiting for deterministic validation.";
   el("preview").srcdoc = "";
   el("open-pdf").hidden = true;
+  el("pdf-detail").textContent = "Waiting for Blob Storage output.";
   el("recovery-badge").hidden = true;
   el("events").replaceChildren();
   el("flow-status").textContent = "Submitting";

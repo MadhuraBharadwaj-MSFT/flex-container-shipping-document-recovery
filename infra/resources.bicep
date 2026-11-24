@@ -3,8 +3,10 @@ targetScope = 'resourceGroup'
 param location string = resourceGroup().location
 param functionLocation string
 param connectorLocation string
+param experienceLocation string
 param foundryModel string
 param foundryModelVersion string
+param foundryModelFormat string
 param foundryModelCapacity int
 param developerPrincipalId string
 param demoOwnerId string
@@ -77,7 +79,7 @@ resource queue 'Microsoft.ServiceBus/namespaces/queues@2024-01-01' = {
 
 resource workspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: '${prefix}-logs-${suffix}'
-  location: location
+  location: experienceLocation
   properties: {
     sku: { name: 'PerGB2018' }
     retentionInDays: 30
@@ -86,7 +88,7 @@ resource workspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
 
 resource insights 'Microsoft.Insights/components@2020-02-02' = {
   name: '${prefix}-insights-${suffix}'
-  location: location
+  location: experienceLocation
   kind: 'web'
   properties: {
     Application_Type: 'web'
@@ -218,6 +220,7 @@ module foundry './foundry.bicep' = {
     location: location
     modelName: foundryModel
     modelVersion: foundryModelVersion
+    modelFormat: foundryModelFormat
     modelCapacity: foundryModelCapacity
     functionPrincipalId: identity.properties.principalId
     developerPrincipalId: developerPrincipalId
@@ -276,6 +279,7 @@ module web './web.bicep' = {
   name: 'demo-web'
   params: {
     name: '${prefix}-web-${suffix}'
+    location: experienceLocation
     functionAppId: recoveryApp.outputs.id
     functionAppName: recoveryApp.outputs.name
     functionAppLocation: location

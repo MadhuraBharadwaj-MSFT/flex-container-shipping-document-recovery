@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "required_top_level": [
+    "shipment_id",
+    "partner",
+    "ship_date",
+    "service_level",
+    "ship_to",
+    "items"
+  ],
+  "allowed_repairs": [
+    "documented camelCase fields to snake_case",
+    "numeric strings to JSON numbers",
+    "MM/DD/YYYY to YYYY-MM-DD",
+    "service_level to lowercase",
+    "country_code to uppercase"
+  ],
+  "forbidden": [
+    "invent missing business values",
+    "remove unknown fields",
+    "repair a message more than once"
+  ]
+}

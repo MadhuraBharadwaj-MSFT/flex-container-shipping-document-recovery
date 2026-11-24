@@ -2,6 +2,7 @@ param name string
 param location string
 param modelName string
 param modelVersion string
+param modelFormat string
 param modelCapacity int
 param functionPrincipalId string
 param developerPrincipalId string
@@ -28,6 +29,9 @@ resource project 'Microsoft.CognitiveServices/accounts/projects@2025-10-01-previ
     displayName: 'Shipping document recovery'
     description: 'Hosted Skill that repairs shipping-record formatting.'
   }
+  dependsOn: [
+    model
+  ]
 }
 
 resource model 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
@@ -35,7 +39,7 @@ resource model 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
   name: modelName
   sku: { name: 'GlobalStandard', capacity: modelCapacity }
   properties: {
-    model: { format: 'OpenAI', name: modelName, version: modelVersion }
+    model: { format: modelFormat, name: modelName, version: modelVersion }
     versionUpgradeOption: 'OnceNewDefaultVersionAvailable'
     raiPolicyName: 'Microsoft.DefaultV2'
   }

@@ -8,6 +8,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from demo_api import prepare_submission
 from message_tracking import summarize
+from tools.schema_content import load_repair_contract
 
 
 class ContractTests(unittest.TestCase):
@@ -46,6 +47,11 @@ class ContractTests(unittest.TestCase):
             ]
         )
         self.assertEqual("requeued", flow["latest"])
+
+    def test_loads_compact_repair_contract(self):
+        contract = load_repair_contract()
+        self.assertEqual(1, contract["version"])
+        self.assertIn("shipment_id", contract["required_top_level"])
 
 
 if __name__ == "__main__":
