@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shipping document recovery</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js?v=1" defer></script>
+</head>
+<body>
+  <header>
+    <div class="brand"><span>AF</span> Azure Functions shipping document recovery</div>
+    <div class="account">
+      <span id="account">Checking access...</span>
+      <a id="sign-in" href="/.auth/login/aad?post_login_redirect_uri=/" hidden>Microsoft sign-in</a>
+      <a id="sign-out" href="/.auth/logout?post_logout_redirect_uri=/" hidden>Sign out</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div>
+        <p class="eyebrow">Flex Consumption containers + Hosted Skills</p>
+        <h1>From partner shipment data to a stored packing-slip PDF</h1>
+        <p>Valid records follow deterministic .NET processing. Repairable formatting errors go through the Service Bus DLQ, where a Markdown-defined Hosted Skill normalizes the record and requeues it.</p>
+      </div>
+      <div class="tabs" role="tablist">
+        <button id="try-tab" class="tab active" role="tab" aria-selected="true">Try it</button>
+        <button id="architecture-tab" class="tab" role="tab" aria-selected="false">Architecture</button>
+      </div>
+    </div>
+
+    <div id="access-note" class="notice">Checking Microsoft sign-in. Only the configured demo owner can submit records.</div>
+    <div id="error" class="error" role="alert" hidden></div>
+
+    <section id="try-panel" class="tab-panel">
+      <div class="workspace">
+        <section class="card composer">
+          <div class="heading">
+            <div><p class="step">Step 1</p><h2>Submit a shipment</h2></div>
+            <span class="pill">JSON</span>
+          </div>
+          <div class="examples">
+            <button id="valid" class="secondary" disabled>Load valid record</button>
+            <button id="malformed" class="secondary" disabled>Load repairable record</button>
+          </div>
+          <label for="message">Partner shipment record</label>
+          <textarea id="message" rows="24" spellcheck="false" disabled></textarea>
+          <button id="send" disabled>Generate packing slip</button>
+        </section>
+
+        <div class="result-column">
+          <section class="card flow-card">
+            <div class="heading">
+              <div><p class="step">Step 2</p><h2>Follow the event-driven flow</h2></div>
+              <span id="flow-status" class="status ready">Ready</span>
+            </div>
+            <div class="flow">
+              <div class="node"><strong>Service Bus</strong><span>shipment-submissions</span></div>
+              <span class="arrow">→</span>
+              <div class="node"><strong>.NET worker</strong><span>Validate, build HTML, run Chromium</span></div>
+              <span class="arrow">→</span>
+              <div class="node success"><strong>Blob Storage</strong><span>JSON + HTML + PDF</span></div>
+            </div>
+            <div class="recovery-flow">
+              <span>Invalid format</span><strong>↓ DLQ → Hosted Skill → requeue ↑</strong>
+            </div>
+            <p id="flow-detail" class="detail">Load an example to begin.</p>
+            <ol id="events" class="events"></ol>
+          </section>
+
+          <section id="results" class="results" hidden>
+            <div class="comparison-grid">
+              <section class="card">
+                <p class="step">Submitted input</p>
+                <pre id="original"></pre>
+              </section>
+              <section class="card">
+                <p class="step">Canonical shipment</p>
+                <pre id="canonical">Waiting for deterministic validation.</pre>
+              </section>
+            </div>
+
+            <section class="card preview-card">
+              <div class="heading">
+                <div><p class="step">Step 3</p><h2>Inspect the exact HTML sent to Chromium</h2></div>
+                <span id="recovery-badge" class="pill purple" hidden>Recovered by Hosted Skill</span>
+              </div>
+              <iframe id="preview" title="Generated packing slip HTML" sandbox=""></iframe>
+            </section>
+
+            <section class="card pdf-card">
+              <div>
+                <p class="step">Step 4</p>
+                <h2>Open the stored PDF</h2>
+                <p id="pdf-detail">Waiting for Blob Storage output.</p>
+              </div>
+              <a id="open-pdf" class="button-link" target="_blank" rel="noopener" hidden>Open packing slip PDF</a>
+            </section>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture-panel" class="tab-panel architecture" hidden>
+      <section class="card">
+        <div class="heading">
+          <div><p class="step">System design</p><h2>One deterministic document pipeline with bounded AI recovery</h2></div>
+        </div>
+        <img src="/architecture.svg" alt="Architecture diagram showing the UI, Service Bus queue, .NET document worker, Blob Storage, DLQ, Hosted Skill, Foundry, and Connector Namespace">
+        <p>The model can normalize only documented formatting differences. The repaired message returns to the same queue and must pass the same deterministic .NET validation before any HTML or PDF is created.</p>
+      </section>
+    </section>
+  </main>
+</body>
+</html>

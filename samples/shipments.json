@@ -1,0 +1,58 @@
+{
+  "valid": {
+    "shipment_id": "assigned-on-send",
+    "partner": "Contoso Logistics",
+    "ship_date": "2026-11-25",
+    "service_level": "priority",
+    "ship_to": {
+      "name": "A. Customer",
+      "address_line1": "1 Main Street",
+      "city": "Seattle",
+      "state_or_province": "WA",
+      "postal_code": "98101",
+      "country_code": "US"
+    },
+    "items": [
+      {
+        "sku": "SKU-100",
+        "description": "Blue widget",
+        "quantity": 2,
+        "unit_weight_kg": 1.25
+      },
+      {
+        "sku": "SKU-200",
+        "description": "Packing insert",
+        "quantity": 1,
+        "unit_weight_kg": 0.1
+      }
+    ]
+  },
+  "malformed": {
+    "shipmentId": "assigned-on-send",
+    "partnerName": "Contoso Logistics",
+    "shipDate": "11/25/2026",
+    "serviceLevel": "PRIORITY",
+    "shipTo": {
+      "name": "A. Customer",
+      "addressLine1": "1 Main Street",
+      "city": "Seattle",
+      "stateOrProvince": "WA",
+      "postalCode": "98101",
+      "countryCode": "us"
+    },
+    "items": [
+      {
+        "sku": "SKU-100",
+        "description": "Blue widget",
+        "quantity": "2",
+        "unitWeightKg": "1.25"
+      },
+      {
+        "sku": "SKU-200",
+        "description": "Packing insert",
+        "quantity": "1",
+        "unitWeightKg": "0.10"
+      }
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "OTEL_TRACES_SAMPLER": "always_on",
+    "PYTHON_APPLICATIONINSIGHTS_ENABLE_TELEMETRY": "true",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "SHIPMENT_QUEUE": "shipment-submissions",
+    "DEMO_OWNER_ID": "",
+    "ServiceBusConnection__fullyQualifiedNamespace": "<namespace>.servicebus.windows.net",
+    "AZURE_FUNCTIONS_AGENTS_PROVIDER": "foundry",
+    "FOUNDRY_PROJECT_ENDPOINT": "https://<account>.services.ai.azure.com/api/projects/<project>",
+    "FOUNDRY_MODEL": "<deployment-name>",
+    "DATA_STORAGE_BLOB_URL": "https://<storage-account>.blob.core.windows.net",
+    "SCHEMA_MCP_SERVER_URL": "<blob-connector-mcp-endpoint>",
+    "QUEUE_MCP_SERVER_URL": "<service-bus-connector-mcp-endpoint>",
+    "SHIPMENT_MCP_CLIENT_ID": "",
+    "AzureWebJobs.shipment_repair.Disabled": "false"
+  }
+}

@@ -1,0 +1,64 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: flex-container-shipping-document-recovery
+metadata:
+  template: flex-container-shipping-document-recovery@1.0.0
+
+infra:
+  provider: bicep
+  path: ./infra
+
+services:
+  recovery:
+    project: ./src
+    language: python
+    host: function
+  web:
+    project: ./web
+    language: js
+    host: staticwebapp
+    dist: public
+
+hooks:
+  preprovision:
+    windows:
+      shell: pwsh
+      interactive: false
+      continueOnError: false
+      run: |
+        $location = if ($env:AZURE_LOCATION) { $env:AZURE_LOCATION } else { "eastus2" }
+        $functionLocation = if ($env:AZURE_FUNCTION_LOCATION) { $env:AZURE_FUNCTION_LOCATION } else { "eastus2euap" }
+        $connectorLocation = if ($env:CONNECTOR_LOCATION) { $env:CONNECTOR_LOCATION } else { "westcentralus" }
+        azd env set AZURE_LOCATION $location
+        azd env set AZURE_FUNCTION_LOCATION $functionLocation
+        azd env set CONNECTOR_LOCATION $connectorLocation
+    posix:
+      shell: sh
+      interactive: false
+      continueOnError: false
+      run: |
+        azd env set AZURE_LOCATION "${AZURE_LOCATION:-eastus2}"
+        azd env set AZURE_FUNCTION_LOCATION "${AZURE_FUNCTION_LOCATION:-eastus2euap}"
+        azd env set CONNECTOR_LOCATION "${CONNECTOR_LOCATION:-westcentralus}"
+  predeploy:
+    windows:
+      shell: pwsh
+      interactive: false
+      continueOnError: false
+      run: ./scripts/predeploy.ps1
+    posix:
+      shell: sh
+      interactive: false
+      continueOnError: false
+      run: sh ./scripts/predeploy.sh
+  postdeploy:
+    windows:
+      shell: pwsh
+      interactive: false
+      continueOnError: false
+      run: ./scripts/postdeploy.ps1
+    posix:
+      shell: sh
+      interactive: false
+      continueOnError: false
+      run: sh ./scripts/postdeploy.sh
